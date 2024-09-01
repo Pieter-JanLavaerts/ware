@@ -1,15 +1,21 @@
 module Main where
 
-import Data.Semigroup
+import System.IO
 
-initN = 4 :: Int
-boardWidth = 6 :: Int
-boardSize = boardWidth * 2 :: Int
+initN :: Int
+initN = 4
+boardWidth :: Int
+boardWidth = 6
+boardSize :: Int
+boardSize = boardWidth * 2
 
 data Board = Board [Int] deriving Show
 
+initSide :: [Int]
 initSide = take boardSize $ repeat initN
-initBoard = Board initSide 
+
+initBoard :: Board
+initBoard = Board initSide
 
 front :: Board -> [Int]
 front (Board ps) = take boardWidth ps
@@ -38,11 +44,34 @@ move i (Board ps) = empty i $ Board $ zipWith (+) ps sow
         paddingAfter = repeat 0
         sow = paddingBefore ++ spread ++ paddingAfter
 
+invalidMove :: (Maybe Int) -> Board -> Bool
+invalidMove Nothing _ = True
+invalidMove (Just n) (Board ps) = n < 0 || n > boardWidth || (ps !! (n - 1)) == 0
+
+readInt :: [Char] -> Maybe Int
+readInt [] = Nothing
+readInt str = case reads str :: [(Int, String)] of
+    [(x ,"")] -> (Just x)
+    _ -> Nothing
+
+getInt :: IO (Maybe Int)
+getInt = do
+    nums <- getLine
+    return (readInt nums)
+
 moveLoop :: Board -> IO()
 moveLoop b = do
-	putStrLn $ prettyBoard b
-	m <- getLine
-	moveLoop $ flipb $ move (read m) b
+   hSetBuffering stdout NoBuffering
+   putStrLn $ show b
+   putStr "> "
+   maybeM <- getInt
+   if invalidMove maybeM b
+       then do
+           putStrLn "Invalid!"
+           moveLoop b
+       else do
+           let Just m = maybeM
+           moveLoop $ flipb $ move m b
 
 main :: IO ()
 main = moveLoop initBoard
