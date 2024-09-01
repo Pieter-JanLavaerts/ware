@@ -2,3 +2,144 @@ main :: IO()
 main = do
     putStrLn "# Ware"
 
+slice :: Int -> Int -> [a] -> [a]
+slice from to xs = take (to - from + 1) (drop from xs)
+
+boardWidth = 6 :: Int
+startingPebbles = 4 :: Int
+
+data Side = Side [Int] deriving Show
+(@@) :: Side -> Int -> Int
+(Side pebbles) @@ i = pebbles !! (boardWidth - 1 - i)
+
+initSide = Side (take boardWidth $ repeat startingPebbles) :: Side
+testSide = Side [1..boardWidth]
+
+data Board = Board Side Side deriving Show
+data Player = Front | Back
+
+bmap :: (Int -> Int) -> Board -> Board
+bmap f (Board (Side fr) (Side ba)) = Board (Side (map f fr)) (Side (map f ba))
+
+incrb :: Board -> Board
+incrb b = bmap (+ 1) b
+
+decrb :: Board -> Board
+decrb b = bmap ((flip (-)) 1) b 
+
+(!?) :: Board -> Int -> Int -- index back (first index is 1)
+(Board _ back) !? i = back @@ i
+
+(!@) :: Board -> Int -> Int -- index front (first index is 1)
+(Board (Side front) _) !@ i = front !! (i - 1)
+
+(!>) :: Board -> Int -> Int -- index whole (first index is 1)
+board !> i
+    | i < boardWidth = board !@ j
+    | i > boardWidth = board !? (j - 1)
+    where
+        j = rem i boardWidth
+
+setPitSide :: Int -> Int ->Side -> Side
+setPitSide i v (Side pebbles) = Side pebblesSet
+    where
+        pebblesSet = (take (i - 1) pebbles) ++ [v] ++ (drop i pebbles) :: [Int]
+        
+flipBack :: Board -> Board
+flipBack (Board f b) = Board f (flipSide b)
+
+flipFront :: Board -> Board
+flipFront (Board f b) = Board (flipSide f) b
+
+setPit :: Int -> Int -> Board -> Board
+setPit i v (Board f b)
+    | i <= boardWidth = Board (setPitSide i v f) b
+    | otherwise = flipBack $ flipBoard $ setPit j v $ flipBack board
+    where
+        board = Board f b
+        j = i `rem` boardWidth
+
+(!/) :: Board -> Int -> Board -- set front index to zero
+(Board (Side frontPebbles) back) !/ i = Board (Side (beforeI ++ [0] ++ afterI)) back
+    where
+        idecr = i - 1
+        beforeI = take idecr frontPebbles
+        afterI  = drop idecr frontPebbles
+
+initBoard :: Board
+initBoard = Board initSide initSide
+
+testBoard = Board testSide (flipSide testSide)
+testBoard2 = Board testSide initSide
+
+flipBoard :: Board -> Board
+flipBoard (Board f b) = Board b f
+
+padPebbles :: [Int] -> [Int]
+padPebbles pebbles = emptys ++ pebbles
+    where
+        diff = boardWidth - length pebbles
+        emptys = take diff $ repeat 0
+
+spread :: Int -> [Int]
+spread n = padPebbles $ take n $ repeat 1
+
+spreadBackward :: Int -> Side -> Side
+spreadBackward n (Side pebbles) = Side $ map (uncurry (+)) $ zippedPebbles
+    where
+        pebbleSpread = take n [1, 1..]
+        pebblesPadded = padPebbles pebbleSpread
+        zippedPebbles = zip pebblesPadded pebbles
+
+flipSide :: Side -> Side
+flipSide (Side s) = Side $ reverse s
+
+spreadForward :: Int -> Side -> Side
+spreadForward n side = flipSide $ spreadBackward n $ flipSide side
+
+spreadBack :: Int -> Board -> Board
+spreadBack n (Board f b) = Board f (spreadBackward n b)
+
+spreadFrontBackward :: Int -> Board -> Board
+spreadFrontBackward n b = flipFront $ spreadFront n (flipFront b)
+
+spreadFront :: Int -> Board -> Board
+spreadFront n (Board f b) = Board (spreadForward n b) b
+
+spreadFrom :: Int -> Side -> Side
+spreadFrom n (Side pebbles) = Side $ beforen ++ [0] ++ afternWithSpread
+    where
+        beforen = take (n - 1) pebbles
+        aftern = drop n pebbles
+        diff = boardWidth - length pebbles
+        afternWithSpread = drop n $ map (uncurry (+)) $ zip (padPebbles aftern) $ spread n
+
+incrFront :: Board -> Board
+incrFront (Board (Side f) b) = Board (Side (map (+ 1) f)) b
+
+moveWHand :: Int -> Board -> Board
+moveWHand h b -- hand board
+    | h > (2 * boardWidth) = moveWHand (h - (2 * boardWidth)) $ incrb b
+    | h < boardWidth = spreadFront h b
+    | otherwise = incrFront $ decrb $ flipBoard $ moveWHand (h - boardWidth) $ flipBoard $ incrFront b
+
+moveFrontBase :: Int -> Board -> Board
+moveFrontBase i (Board f b)
+    | i <= boardWidth = Board (spreadFrom i f) b
+    | otherwise = error "Index larger than board width"
+    where
+        board = Board f b 
+        n = board !> i
+
+moveFront :: Int -> Board -> Board
+moveFront i b = moveWHand i b
+
+moveBack :: Int -> Board -> Board
+moveBack i b = flipBoard $ moveWHand i (flipBoard b)
+    where
+        n = b !> i
+
+move :: Player -> Int -> Board  -> Board
+move Front i b = moveFront i b
+move Back i b = moveBack i b
+
