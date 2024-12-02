@@ -38,7 +38,7 @@ empty i (Board ps) = Board $ before ++ [0] ++ after
 move :: Int -> Board -> Board
 move i (Board ps) = empty i $ Board $ zipWith (+) ps sow
     where
-        n = ps !! i
+        n = ps !! (i - 1)
         spread = replicate n 1
         paddingBefore = replicate i 0
         paddingAfter = repeat 0
