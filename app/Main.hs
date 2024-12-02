@@ -9,10 +9,10 @@ boardWidth = 6
 boardSize :: Int
 boardSize = boardWidth * 2
 
-data Board = Board [Int] deriving Show
+newtype Board = Board [Int] deriving Show
 
 initSide :: [Int]
-initSide = take boardSize $ repeat initN
+initSide = replicate boardSize initN
 
 initBoard :: Board
 initBoard = Board initSide
@@ -27,7 +27,7 @@ flipb :: Board -> Board
 flipb b = Board $ back b ++ front b
 
 prettyBoard :: Board -> String
-prettyBoard b = (show $ reverse $ back b) ++ "\n" ++ (show $ front b)
+prettyBoard b = show (reverse $ back b) ++ "\n" ++ show (front b)
 
 empty :: Int -> Board -> Board
 empty i (Board ps) = Board $ before ++ [0] ++ after
@@ -39,39 +39,41 @@ move :: Int -> Board -> Board
 move i (Board ps) = empty i $ Board $ zipWith (+) ps sow
     where
         n = ps !! i
-        spread = take n $ repeat 1
-        paddingBefore = take i $ repeat 0
+        spread = replicate n 1
+        paddingBefore = replicate i 0
         paddingAfter = repeat 0
         sow = paddingBefore ++ spread ++ paddingAfter
 
-invalidMove :: (Maybe Int) -> Board -> Bool
+invalidMove :: Maybe Int -> Board -> Bool
 invalidMove Nothing _ = True
 invalidMove (Just n) (Board ps) = n < 0 || n > boardWidth || (ps !! (n - 1)) == 0
+
+validMove :: Maybe Int -> Board -> Maybe Board
+validMove Nothing _ = Nothing
+validMove n b = if invalidMove n b then Nothing else Just b
 
 readInt :: [Char] -> Maybe Int
 readInt [] = Nothing
 readInt str = case reads str :: [(Int, String)] of
-    [(x ,"")] -> (Just x)
+    [(x ,"")] -> Just x
     _ -> Nothing
 
 getInt :: IO (Maybe Int)
-getInt = do
-    nums <- getLine
-    return (readInt nums)
+getInt = do 
+    readInt <$> getLine
 
 moveLoop :: Board -> IO()
 moveLoop b = do
    hSetBuffering stdout NoBuffering
-   putStrLn $ show b
+   print b
    putStr "> "
    maybeM <- getInt
    if invalidMove maybeM b
-       then do
-           putStrLn "Invalid!"
-           moveLoop b
-       else do
-           let Just m = maybeM
-           moveLoop $ flipb $ move m b
+    then do
+        putStrLn "Invalid!"
+    else do
+        let Just m = maybeM
+        moveLoop $ flipb $ move m b
 
 main :: IO ()
 main = moveLoop initBoard
