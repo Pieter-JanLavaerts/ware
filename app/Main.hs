@@ -27,7 +27,7 @@ flipb :: Board -> Board
 flipb b = Board $ back b ++ front b
 
 prettyBoard :: Board -> String
-prettyBoard b = show (reverse $ back b) ++ "\n" ++ show (front b)
+prettyBoard b = show (reverse $ back b) ++ "\n" ++ show (front b) ++ "\n"
 
 empty :: Int -> Board -> Board
 empty i (Board ps) = Board $ before ++ [0] ++ after
@@ -70,7 +70,12 @@ moveLoop b = do
    putStr "> "
    mm <- getInt
    case validMove mm b of
-    Just m -> moveLoop $ flipb $ move m b
+    Just m -> do
+        putStrLn "Move."
+        let moveB = move m b
+        putStrLn $ prettyBoard moveB
+        _ <- getInt
+        moveLoop $ flipb moveB
     Nothing -> do
         putStrLn "Invalid move."
         moveLoop b
