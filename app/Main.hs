@@ -46,11 +46,12 @@ move i (Board ps) = empty i $ Board $ zipWith (+) ps sow
 
 invalidMove :: Maybe Int -> Board -> Bool
 invalidMove Nothing _ = True
-invalidMove (Just n) (Board ps) = n < 0 || n > boardWidth || (ps !! (n - 1)) == 0
+invalidMove (Just n) (Board ps) = n < 1 || n > boardWidth || (ps !! (n - 1)) == 0
 
-validMove :: Maybe Int -> Board -> Maybe Board
-validMove Nothing _ = Nothing
-validMove n b = if invalidMove n b then Nothing else Just b
+validMove :: Maybe Int -> Board -> Maybe Int
+validMove m b 
+    | invalidMove m b = Nothing
+    | otherwise = m
 
 readInt :: [Char] -> Maybe Int
 readInt [] = Nothing
@@ -65,15 +66,14 @@ getInt = do
 moveLoop :: Board -> IO()
 moveLoop b = do
    hSetBuffering stdout NoBuffering
-   print b
+   putStrLn $ prettyBoard b
    putStr "> "
-   maybeM <- getInt
-   if invalidMove maybeM b
-    then do
-        putStrLn "Invalid!"
-    else do
-        let Just m = maybeM
-        moveLoop $ flipb $ move m b
+   mm <- getInt
+   case validMove mm b of
+    Just m -> moveLoop $ flipb $ move m b
+    Nothing -> do
+        putStrLn "Invalid move."
+        moveLoop b
 
 main :: IO ()
 main = moveLoop initBoard
