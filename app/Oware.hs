@@ -1,5 +1,8 @@
 module Oware where
 
+import Text.Printf
+import Data.List (intercalate)
+
 initN :: Int
 initN = 4
 boardWidth :: Int
@@ -30,8 +33,16 @@ backHand (Board _ _ bh) = bh
 flipb :: Board -> Board
 flipb b = Board (back b ++ front b) (backHand b) (frontHand b)
     
+fmt :: Int -> [Char]
+fmt = printf "%-02d"
+
+prettySide :: [Int] -> [Char]
+prettySide ps = intercalate "|" (map fmt $ reverse ps)
+
 prettyBoard :: Board -> String
-prettyBoard b = show (backHand b) ++ show (reverse $ back b) ++ ".\n." ++ show (front b) ++ show (frontHand b) ++ "\n"
+prettyBoard b = fmt (backHand b) ++ 
+    prettySide (reverse (back b)) ++ 
+    "..\n.." ++ prettySide (front b) ++ fmt (frontHand b) ++ "\n"
 
 empty :: Int -> Board -> Board
 empty i (Board ps fh bh) = Board (before ++ [0] ++ after) fh bh
@@ -53,7 +64,7 @@ capture i b
     | otherwise = b
     where
         Board ps _ _ = b
-        n = ps !! i
+        n = ps !! (i - 1)
 
 move :: Int -> Board -> Board
 move i (Board ps fh bh)
