@@ -2,6 +2,7 @@ module Main where
 
 import System.IO
 import Oware
+import DumbPlayer
 
 readInt :: [Char] -> Maybe Int
 readInt [] = Nothing
@@ -13,8 +14,8 @@ getInt :: IO (Maybe Int)
 getInt = do 
     readInt <$> getLine
 
-moveLoop :: Board -> IO()
-moveLoop b = do
+playerMove :: Board -> IO()
+playerMove b = do
    hSetBuffering stdout NoBuffering
    putStrLn $ prettyBoard b
    putStr "> "
@@ -25,11 +26,14 @@ moveLoop b = do
         let moveB = move m b
         putStrLn $ prettyBoard moveB
         _ <- getInt
-        moveLoop $ flipb moveB
+        computerMove $ flipb moveB
     Nothing -> do
         putStrLn "Invalid move."
-        moveLoop b
+        playerMove b
+
+computerMove :: Board -> IO()
+computerMove b = playerMove $ flipb $ move (dumbMove b) b
 
 main :: IO ()
-main = moveLoop initBoard
+main = playerMove initBoard
 

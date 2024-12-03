@@ -37,7 +37,7 @@ fmt :: Int -> [Char]
 fmt = printf "%-02d"
 
 prettySide :: [Int] -> [Char]
-prettySide ps = intercalate "|" (map fmt $ reverse ps)
+prettySide ps = "|" ++ intercalate "|" (map fmt ps) ++ "|"
 
 prettyBoard :: Board -> String
 prettyBoard b = fmt (backHand b) ++ 
