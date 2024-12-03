@@ -63,11 +63,12 @@ addToBackHand n (Board ps fh bh) = Board ps fh (bh + n)
 
 capture :: Int -> Board -> Board
 capture i b
-    | i > boardWidth && i <= boardSize && (n == 2 || n == 3) = capture (i - 1) $ addToFrontHand n $ empty i b
+    | (ms > boardWidth) && (i <= boardSize) && (n == 2 || n == 3) = capture (i - 1) $ addToFrontHand n $ empty i b
     | otherwise = b
     where
         Board ps _ _ = b
         n = ps !! (i - 1)
+        ms = i -- mod boardsize
 
 move :: Int -> Board -> Board
 move i (Board ps fh bh)
@@ -84,6 +85,15 @@ move i (Board ps fh bh)
 invalidMove :: Maybe Int -> Board -> Bool
 invalidMove Nothing _ = True
 invalidMove (Just n) (Board ps _ _) = n < 1 || n > boardWidth || (ps !! (n - 1)) == 0
+
+gameDraw :: Board -> Bool
+gameDraw b = frontHand b == 24 && backHand b == 24
+
+frontWon :: Board -> Bool
+frontWon b = frontHand b >= 25 
+
+backWon :: Board -> Bool
+backWon b = backHand b >= 25 
 
 validMove :: Maybe Int -> Board -> Maybe Int
 validMove m b 

@@ -15,25 +15,36 @@ getInt = do
     readInt <$> getLine
 
 playerMove :: Board -> IO()
-playerMove b = do
-   hSetBuffering stdout NoBuffering
-   putStrLn $ prettyBoard b
-   putStr "> "
-   mm <- getInt
-   case validMove mm b of
-    Just m -> do
-        putStrLn "Move."
-        let moveB = move m b
-        putStrLn $ prettyBoard moveB
-        _ <- getInt
-        computerMove $ flipb moveB
-    Nothing -> do
-        putStrLn "Invalid move."
-        playerMove b
+playerMove b
+    | frontWon b = do 
+        putStr "You won"
+        return ()
+    | backWon b = do 
+        putStr "You lose"
+        return ()
+    | gameDraw b = do
+        putStr "Draw"
+        return ()
+    | otherwise = do
+        putStrLn $ prettyBoard b
+        putStr "> "
+        mm <- getInt
+        case validMove mm b of
+         Just m -> do
+             putStrLn "Move."
+             let moveB = move m b
+             putStrLn $ prettyBoard moveB
+             _ <- getInt
+             computerMove $ flipb moveB
+         Nothing -> do
+             putStrLn "Invalid move."
+             playerMove b
 
 computerMove :: Board -> IO()
 computerMove b = playerMove $ flipb $ move (dumbMove b) b
 
 main :: IO ()
-main = playerMove initBoard
+main = do
+    hSetBuffering stdout NoBuffering
+    playerMove initBoard
 
