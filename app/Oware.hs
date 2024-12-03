@@ -58,9 +58,12 @@ moveWrap h (Board ps fh bh)
 addToFrontHand ::  Int -> Board -> Board
 addToFrontHand n (Board ps fh bh) = Board ps (fh + n) bh
 
+addToBackHand ::  Int -> Board -> Board
+addToBackHand n (Board ps fh bh) = Board ps fh (bh + n)
+
 capture :: Int -> Board -> Board
 capture i b
-    | i > boardWidth && (n == 2 || n == 3) = capture (i - 1) $ addToFrontHand n $ empty i b
+    | i > boardWidth && i <= boardSize && (n == 2 || n == 3) = capture (i - 1) $ addToFrontHand n $ empty i b
     | otherwise = b
     where
         Board ps _ _ = b

@@ -21,19 +21,20 @@ captureTestBoard = Board ([0, 0, 0, 0, 0, 2] ++ [1, 1, 0, 0, 0, 0]) 0 0
 captureTestBoardAfter :: Board
 captureTestBoardAfter = Board ([0, 0, 0, 0, 0, 0] ++ [0, 0, 0, 0, 0, 0]) 4 0
 
-captureTest2Board :: Board
-captureTest2Board = Board ([0, 0, 0, 0, 0, 3] ++ [1, 2, 2, 3, 2, 2]) 0 0
+capture4TestBoard :: Board
+capture4TestBoard = Board ([1, 10, 8, 6, 5, 1] ++ [5, 5, 5, 0, 2, 2]) 0 0
 
-captureTest2BoardAfter :: Board
-captureTest2BoardAfter = Board ([0, 0, 0, 0, 0, 0] ++ [0, 0, 0, 3, 2, 2]) 8 0
+capture4TestBoardAfter :: Board
+capture4TestBoardAfter = Board ([1, 10, 8, 6, 5, 1] ++ [5, 5, 5, 0, 0, 0]) 4 0
 
 spec :: Spec
 spec = do
+    describe "capture" $ do
+        it "should capture 2" $ do
+            capture 12 capture4TestBoard `shouldBe` capture4TestBoardAfter
     describe "move" $ do
         it "should wrap around" $ do
             move 6 wrapTestBoard `shouldBe` wrapTestBoardAfter
         it "should capture" $ do
             move 6 captureTestBoard `shouldBe` captureTestBoardAfter
-        it "should capture 2" $ do
-            move 6 captureTest2Board `shouldBe` captureTest2BoardAfter
     
