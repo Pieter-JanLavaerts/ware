@@ -4,16 +4,16 @@ import Test.Hspec
 import Oware
 
 setI :: Int -> Int -> Board -> Board
-setI i j (Board ps) = Board $ before ++ [j] ++ after
+setI i j (Board ps fh bh) = Board (before ++ [j] ++ after) fh bh
     where
         before = take (i - 1) ps
         after = drop i ps
 
 wrapTestBoard :: Board
-wrapTestBoard = setI 6 7 $ Board (replicate boardSize 0)
+wrapTestBoard = setI 6 7 $ Board (replicate boardSize 0) 0 0
 
 wrapTestBoardAfter :: Board
-wrapTestBoardAfter = Board $ [1] ++ replicate (boardWidth - 1) 0 ++ replicate boardWidth 1
+wrapTestBoardAfter = Board ([1] ++ replicate (boardWidth - 1) 0 ++ replicate boardWidth 1) 0 0
 
 spec :: Spec
 spec = do
