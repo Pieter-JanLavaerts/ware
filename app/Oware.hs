@@ -7,7 +7,7 @@ boardWidth = 6
 boardSize :: Int
 boardSize = boardWidth * 2
 
-newtype Board = Board [Int] deriving Show
+newtype Board = Board [Int] deriving (Show, Eq)
 
 initSide :: [Int]
 initSide = replicate boardSize initN
@@ -33,10 +33,18 @@ empty i (Board ps) = Board $ before ++ [0] ++ after
         before = take (i - 1) ps
         after = drop i ps
 
+moveWHand :: Int -> Board -> Board
+moveWHand h (Board ps)
+    | h < boardSize = Board $ zipWith (+) ps (replicate h 1 ++ repeat 0)
+    | otherwise = moveWHand (h - boardSize) (Board (map (+ 1) ps))
+
 move :: Int -> Board -> Board
-move i (Board ps) = empty i $ Board $ zipWith (+) ps sow
+move i (Board ps)
+    | i + n < boardSize = empty i $ Board $ zipWith (+) ps sow
+    | otherwise = moveWHand h $ empty i $ Board $ zipWith (+) ps (paddingBefore ++ repeat 1)
     where
         n = ps !! (i - 1)
+        h = i + n - boardSize
         spread = replicate n 1
         paddingBefore = replicate i 0
         paddingAfter = repeat 0
