@@ -72,7 +72,7 @@ capture i b
 
 move :: Int -> Board -> Board
 move i (Board ps fh bh)
-    | i + n < boardSize = capture (i + n) $ empty i $ Board (zipWith (+) ps sow) fh bh
+    | i + n <= boardSize = capture (i + n) $ empty i $ Board (zipWith (+) ps sow) fh bh
     | otherwise = moveWrap h $ empty i $ Board (zipWith (+) ps (paddingBefore ++ repeat 1)) fh bh
     where
         n = ps !! (i - 1)
