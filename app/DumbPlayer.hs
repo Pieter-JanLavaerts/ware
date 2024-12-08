@@ -3,7 +3,7 @@ module DumbPlayer where
 import Oware
 
 dumbMove :: Board -> Int
-dumbMove (Board ps _ _) = dumbMoveIter 6 ps
+dumbMove (Board ps _ _) = dumbMoveIter boardWidth ps
 
 dumbMoveIter :: Int -> [Int] -> Int
 dumbMoveIter i ps

@@ -9,6 +9,8 @@ boardWidth :: Int
 boardWidth = 6
 boardSize :: Int
 boardSize = boardWidth * 2
+winAmount :: Int
+winAmount = 25
 
 data Board = Board [Int] Int Int deriving (Show, Eq)
 
@@ -93,14 +95,20 @@ invalidMove :: Maybe Int -> Board -> Bool
 invalidMove Nothing _ = True
 invalidMove (Just n) (Board ps _ _) = n < 1 || n > boardWidth || (ps !! (n - 1)) == 0
 
+frontDraw :: Board -> Bool
+frontDraw b = frontHand b == winAmount - 1
+
+backDraw :: Board -> Bool
+backDraw = frontDraw . flipb
+
 gameDraw :: Board -> Bool
-gameDraw b = frontHand b == 24 && backHand b == 24
+gameDraw b = frontDraw b && backDraw b
 
 frontWon :: Board -> Bool
-frontWon b = frontHand b >= 25 
+frontWon b = frontHand b >= winAmount
 
 backWon :: Board -> Bool
-backWon b = backHand b >= 25 
+backWon = frontWon . flipb
 
 validMove :: Maybe Int -> Board -> Maybe Int
 validMove m b 
