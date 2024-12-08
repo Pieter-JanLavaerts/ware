@@ -24,6 +24,9 @@ front (Board ps _ _) = take boardWidth ps
 back :: Board -> [Int]
 back (Board ps _ _) = drop boardWidth ps
 
+pebbles :: Board -> [Int]
+pebbles (Board ps _ _) = ps
+
 frontHand :: Board -> Int
 frontHand (Board _ fh _) = fh
 
@@ -61,14 +64,18 @@ addToFrontHand n (Board ps fh bh) = Board ps (fh + n) bh
 addToBackHand ::  Int -> Board -> Board
 addToBackHand n (Board ps fh bh) = Board ps fh (bh + n)
 
+grandSlam :: Int -> Board -> Bool
+grandSlam i b = i == boardSize && (takeWhile (\x -> x == 2 || x == 3) ps) == (back b)
+  where
+    ps = pebbles b
+
 capture :: Int -> Board -> Board
 capture i b
-    | (ms > boardWidth) && (i <= boardSize) && (n == 2 || n == 3) = capture (i - 1) $ addToFrontHand n $ empty i b
+    | (i > boardWidth) && (n == 2 || n == 3) && not (grandSlam i b) = capture (i - 1) $ addToFrontHand n $ empty i b
     | otherwise = b
     where
         Board ps _ _ = b
         n = ps !! (i - 1)
-        ms = i -- mod boardsize
 
 move :: Int -> Board -> Board
 move i (Board ps fh bh)
