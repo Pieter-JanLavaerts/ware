@@ -14,6 +14,12 @@ getInt :: IO (Maybe Int)
 getInt = do 
     readInt <$> getLine
 
+idIfValidMove :: Maybe Int -> Board -> Maybe Int
+idIfValidMove Nothing _ = Nothing
+idIfValidMove (Just m) b
+    | validMove m b = Just m
+    | otherwise = Nothing
+
 playerMove :: Board -> IO()
 playerMove b
     | frontWon b = do 
@@ -29,7 +35,7 @@ playerMove b
         putStrLn $ prettyBoard b
         putStr "> "
         mm <- getInt
-        case validMove mm b of
+        case idIfValidMove mm b of
          Just m -> do
              putStrLn "Move."
              let moveB = move m b

@@ -98,12 +98,11 @@ move i (Board ps fh bh)
         paddingAfter = repeat 0
         sow = paddingBefore ++ spread ++ paddingAfter
 
-invalidMove :: Maybe Int -> Board -> Bool
-invalidMove Nothing _ = True
-invalidMove (Just n) b = outRange || emptyPit || all (== 0) backAfterMove
+validMove :: Int -> Board -> Bool
+validMove n b = inRange && not emptyPit && all (/= 0) backAfterMove
     where
         ps = pebbles b
-        outRange = n < 1 || n > boardWidth
+        inRange = n >= 1 && n <= boardWidth
         emptyPit = (ps !! (n - 1)) == 0
         backAfterMove = back $ move n b
 
@@ -121,9 +120,4 @@ frontWon b = frontHand b >= winAmount
 
 backWon :: Board -> Bool
 backWon = frontWon . flipb
-
-validMove :: Maybe Int -> Board -> Maybe Int
-validMove m b 
-    | invalidMove m b = Nothing
-    | otherwise = m
 
