@@ -101,9 +101,8 @@ move i (Board ps fh bh)
 validMove :: Int -> Board -> Bool
 validMove n b = inRange && not emptyPit && all (/= 0) backAfterMove
     where
-        ps = pebbles b
         inRange = n >= 1 && n <= boardWidth
-        emptyPit = (ps !! (n - 1)) == 0
+        emptyPit = b ! n == 0
         backAfterMove = back $ move n b
 
 frontDraw :: Board -> Bool
