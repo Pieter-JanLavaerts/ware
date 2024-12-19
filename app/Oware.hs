@@ -14,11 +14,14 @@ winAmount = 25
 
 data Board = Board [Int] Int Int deriving (Show, Eq)
 
-initSide :: [Int]
-initSide = replicate boardSize initN
+(!) :: Board -> Int -> Int
+(!) (Board ps _ _) i = ps !! (i - 1)
+
+initPebbles :: [Int]
+initPebbles = replicate boardSize initN
 
 initBoard :: Board
-initBoard = Board initSide 0 0
+initBoard = Board initPebbles 0 0
 
 front :: Board -> [Int]
 front (Board ps _ _) = take boardWidth ps
@@ -67,17 +70,21 @@ addToBackHand ::  Int -> Board -> Board
 addToBackHand n (Board ps fh bh) = Board ps fh (bh + n)
 
 grandSlam :: Int -> Board -> Bool
-grandSlam i b = i == boardSize && (takeWhile (\x -> x == 2 || x == 3) ps) == (back b)
-  where
-    ps = pebbles b
+grandSlam i b = allCapture && restEmpty where
+        allCapture = all (\x -> x == 2 || x == 3) $ take (i - boardWidth) $ back b
+        restEmpty = all (== 0) $ drop (i - boardWidth) $ back b
+
+isCapture :: Int -> Board -> Bool
+isCapture i b = (i > boardWidth) && (n == 2 || n == 3) && not (grandSlam i b)
+    where
+        n = b ! i
 
 capture :: Int -> Board -> Board
 capture i b
-    | (i > boardWidth) && (n == 2 || n == 3) && not (grandSlam i b) = capture (i - 1) $ addToFrontHand n $ empty i b
+    | isCapture i b = capture (i - 1) $ addToFrontHand n $ empty i b
     | otherwise = b
     where
-        Board ps _ _ = b
-        n = ps !! (i - 1)
+        n = b ! i
 
 move :: Int -> Board -> Board
 move i (Board ps fh bh)
@@ -93,7 +100,12 @@ move i (Board ps fh bh)
 
 invalidMove :: Maybe Int -> Board -> Bool
 invalidMove Nothing _ = True
-invalidMove (Just n) (Board ps _ _) = n < 1 || n > boardWidth || (ps !! (n - 1)) == 0
+invalidMove (Just n) b = outRange || emptyPit || all (== 0) backAfterMove
+    where
+        ps = pebbles b
+        outRange = n < 1 || n > boardWidth
+        emptyPit = (ps !! (n - 1)) == 0
+        backAfterMove = back $ move n b
 
 frontDraw :: Board -> Bool
 frontDraw b = frontHand b == winAmount - 1
